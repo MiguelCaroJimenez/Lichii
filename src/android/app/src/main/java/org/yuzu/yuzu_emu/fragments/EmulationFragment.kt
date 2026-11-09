@@ -239,7 +239,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback {
             handleEmuReadyIntent(intent)
             return
         } else if (intentUri != null) {
-            intentGame = if (Game.extensions.contains(FileUtil.getExtension(intentUri))) {
+            val realPath = intentUri.path
+            intentGame = if (intentUri.scheme == null && realPath?.startsWith("/") == true) {
+                GameHelper.getGameFromRealPath(realPath)
+            } else if (Game.extensions.contains(FileUtil.getExtension(intentUri))) {
                 GameHelper.getGame(requireActivity().intent.data!!, false)
             } else {
                 null

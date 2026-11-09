@@ -115,7 +115,7 @@ object GameHelper {
 
     // File extensions considered as external content, buuut should
     // be done better imo.
-    private val externalContentExtensions = setOf("nsp", "xci", "nsz", "xcz")
+    private val externalContentExtensions = setOf("nsp", "xci", "nsz", "xcz", "nup")
 
     private fun scanContentContainersRecursive(
         files: Array<MinimalDocumentFile>,
@@ -259,6 +259,17 @@ object GameHelper {
             gamesByProgramId[game.programId] = game
         }
         return true
+    }
+
+    fun getGameFromRealPath(path: String): Game? {
+        preferences = PreferenceManager.getDefaultSharedPreferences(YuzuApplication.appContext)
+        val file = File(path)
+        val folder = if (file.parentFile?.name.equals("exefs", true)) {
+            file.parentFile?.parentFile
+        } else {
+            file.parentFile
+        }
+        return getDeconstructedGame(path, folder?.name ?: "")
     }
 
     private fun getDeconstructedGame(path: String, folderName: String): Game? {
