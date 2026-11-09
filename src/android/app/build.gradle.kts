@@ -190,7 +190,7 @@ android {
             isDefault = true
             minSdk = 33
 
-            manifestPlaceholders += mapOf("appNameBase" to "Eglantine")
+            manifestPlaceholders += mapOf("appNameBase" to "Caro Emulator")
             resValue("string", "app_name_suffixed", "Eden")
 
             ndk {
@@ -219,7 +219,7 @@ android {
         create("legacy") {
             dimension = "version"
             minSdk = 29
-            manifestPlaceholders += mapOf("appNameBase" to "Eglantine Legacy")
+            manifestPlaceholders += mapOf("appNameBase" to "Caro Emulator Legacy")
             resValue("string", "app_name_suffixed", "Eden Legacy")
             applicationId = "dev.legacy.eden_emulator"
 
