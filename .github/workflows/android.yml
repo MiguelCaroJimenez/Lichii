@@ -1,0 +1,62 @@
+# Compila el APK de Android de Lichii (src/android) en los servidores de GitHub.
+# Uso: copia este archivo a .github/workflows/android.yml en tu fork de
+# zortos293/Lichii (rama nx2), ve a la pestaña Actions -> "Android APK" -> Run workflow.
+# Al terminar, descarga el artefacto "lichii-android" (contiene el .apk).
+name: Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Variante (Mainline = Android 13+, Legacy = Android 10+)"
+        default: "assembleMainlineRelWithDebInfo"
+        type: choice
+        options:
+          - assembleMainlineRelWithDebInfo
+          - assembleLegacyRelWithDebInfo
+
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Liberar espacio en disco
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0   # build.gradle.kts usa `git describe` para la versión
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      # Versiones exactas que pide src/android/app/build.gradle.kts
+      - name: Instalar SDK 36, NDK 28.2 y CMake 3.31.5
+        run: sdkmanager --install "platforms;android-36" "ndk;28.2.13676358" "cmake;3.31.5"
+
+      - name: Instalar herramientas del host
+        run: sudo apt-get update && sudo apt-get install -y glslang-tools
+
+      - name: Compilar APK
+        working-directory: src/android
+        env:
+          ANDROID_NDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}/ndk/28.2.13676358
+          CMAKE_BUILD_PARALLEL_LEVEL: 4
+        run: |
+          chmod +x gradlew
+          ./gradlew ${{ inputs.task }} --no-daemon --stacktrace
+
+      - name: Subir APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lichii-android
+          path: src/android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
