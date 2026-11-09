@@ -152,6 +152,10 @@ object FileUtil {
      * @return bool
      */
     fun exists(path: String?, suppressLog: Boolean = false): Boolean {
+        // Extracted games are stored as real filesystem paths
+        if (path != null && path.startsWith("/")) {
+            return File(path).exists()
+        }
         var c: Cursor? = null
         try {
             val mUri = Uri.parse(path)
@@ -174,6 +178,9 @@ object FileUtil {
      * @return bool
      */
     fun isDirectory(path: String): Boolean {
+        if (path.startsWith("/")) {
+            return File(path).isDirectory
+        }
         val resolver = context.contentResolver
         val columns = arrayOf(
             DocumentsContract.Document.COLUMN_MIME_TYPE
@@ -200,6 +207,9 @@ object FileUtil {
      * @return String display name
      */
     fun getFilename(uri: Uri): String {
+        if (uri.scheme == null && uri.path?.startsWith("/") == true) {
+            return File(uri.path!!).name
+        }
         if (uri.scheme == "file") {
             return uri.lastPathSegment?.takeIf { it.isNotEmpty() } ?: throw IOException(
                 "Invalid file URI: $uri"
